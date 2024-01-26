@@ -1,0 +1,24 @@
+{
+  "name": "mysql-ts-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "scripts": {
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm"
+  },
+  "bin": {
+    "mysql-ts-generator": "./bin/cli.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mysql2": "^3.9.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  }
+}

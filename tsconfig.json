@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",         // Specify ECMAScript target version
+    "moduleResolution": "node", // Resolve modules using Node.js style
+    "strict": true,             // Enable all strict type-checking options
+    "esModuleInterop": true,    // Enable interoperation between CommonJS and ES Modules
+    "skipLibCheck": true,       // Skip type checking of all declaration files (*.d.ts)
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in filenames
+    "declaration": true,        // Generate corresponding '.d.ts' file
+    "outDir": "./dist",         // Redirect output structure to the directory
+    "rootDir": "./src",         // Specify the root directory of input files
+    "lib": ["esnext"],          // Specify library files to be included in the compilation
+    "sourceMap": true ,          // Generate source map files for debugging,
+    "noImplicitAny": false
+  },
+  "include": [
+    "src/**/*" // Include all files in the src directory
+  ],
+  "exclude": [
+    "node_modules", // Exclude the node_modules directory
+    "**/*.spec.ts"  // Exclude test files
+  ]
+}
