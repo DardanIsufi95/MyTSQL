@@ -12,7 +12,7 @@ class TableRepository {
         return {};
     }
 }
-export function createMyTsql(config) {
+export function createMyTSQL(config) {
     const knex = createKnex(config);
     const routinesProxy = new Proxy({}, {
         get(target, prop, receiver) {
@@ -41,7 +41,7 @@ export function createMyTsql(config) {
         queryBuilder: knex.queryBuilder.bind(knex),
     };
 }
-export default createMyTsql;
+export default createMyTSQL;
 // console.log(a.tb.data_type_showcase.select().toQuery())
 // a.proc.test_procedure(1,2,3,4,5,6,7,new Date(),new Date(),10,11,new Date(),new Date(),new Date(),new Date(),new Date(),2,new Date(),"new Date()",1,"new Date()",3,'enum_param','set_param,set_param3')
 //# sourceMappingURL=index.js.map

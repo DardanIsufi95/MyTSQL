@@ -6,7 +6,7 @@ import {ResultSetHeader , RowDataPacket} from 'mysql2/promise'
 
 
 
-type MyTsqlSchemaType = {
+type MyTSQLSchemaType = {
     routines : {
         [key: string] : {
             parameters : any,
@@ -22,16 +22,16 @@ type MyTsqlSchemaType = {
     }
 }
 
-type MyTsqlRoutineType<T extends MyTsqlSchemaType> = {
+type MyTSQLRoutineType<T extends MyTSQLSchemaType> = {
     [key in keyof T['routines']] : <R extends any[] = T['routines'][key]['returns']>(...args: T['routines'][key]['parameters']) => Promise<{headers: ResultSetHeader , dataSet: R}> 
 }
 
-type MyTsqlTableType<T extends MyTsqlSchemaType> =  {
+type MyTSQLTableType<T extends MyTSQLSchemaType> =  {
     [key in keyof T['tables']] : Knex.QueryBuilder<T['tables'][key]['columns'],T['tables'][key]['columns'][] > 
 }
 
 
-class TableRepository<T extends MyTsqlSchemaType['tables'][string]> {
+class TableRepository<T extends MyTSQLSchemaType['tables'][string]> {
     constructor(private knex: Knex, private tablename: string) {}
 
     async getOneOrFail(opts: Partial<T['columns']>): Promise<T['columns']> {
@@ -43,11 +43,11 @@ class TableRepository<T extends MyTsqlSchemaType['tables'][string]> {
 }
 
 
-export function createMyTsql<T extends MyTsqlSchemaType>(this: any, config: Knex.Config){
+export function createMyTSQL<T extends MyTSQLSchemaType>(this: any, config: Knex.Config){
 
     const knex = createKnex(config)
 
-    const routinesProxy = new Proxy<MyTsqlRoutineType<T>>({} as MyTsqlRoutineType<T>, {
+    const routinesProxy = new Proxy<MyTSQLRoutineType<T>>({} as MyTSQLRoutineType<T>, {
         get(target, prop , receiver) {
             return async function(...args: any[] ){
                 //const sql = mysql.format(`call ${String(prop)}(${Array.from(args).map((arg, index) => `?`).join(',')})`, args)
@@ -63,7 +63,7 @@ export function createMyTsql<T extends MyTsqlSchemaType>(this: any, config: Knex
         }
     })
 
-    const tablesProxy = new Proxy<MyTsqlTableType<T>>({} as MyTsqlTableType<T>, {
+    const tablesProxy = new Proxy<MyTSQLTableType<T>>({} as MyTSQLTableType<T>, {
         get(target, prop, receiver) {
 
             
@@ -88,7 +88,7 @@ export function createMyTsql<T extends MyTsqlSchemaType>(this: any, config: Knex
 export type GenerateSetCombinations<T extends string, U extends string = T> =
     T extends any ? `${T},${GenerateSetCombinations<Exclude<U, T>>}` | T : never;
 
-export default createMyTsql
+export default createMyTSQL
 
 
 // console.log(a.tb.data_type_showcase.select().toQuery())

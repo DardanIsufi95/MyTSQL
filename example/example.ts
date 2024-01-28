@@ -33,12 +33,12 @@ generateSchemaAndWriteToFile().catch(err => {})
 ////////////////////////////////////////////////////////
 //        use generated schema   
 ////////////////////////////////////////////////////////
-import {createMyTsql} from '../src/index'
+import {createMyTSQL} from '../src/index'
 import type { testSchema } from "./test";
 
 
 
-const db = createMyTsql<testSchema>({
+const db = createMyTSQL<testSchema>({
     client: 'mysql2',
     connection: {
         host: 'localhost',

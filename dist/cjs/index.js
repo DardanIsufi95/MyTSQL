@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createMyTsql = exports.generateMysqlDatabaseTypeString = void 0;
+exports.createMyTSQL = exports.generateMysqlDatabaseTypeString = void 0;
 var generator_1 = require("./generator");
 Object.defineProperty(exports, "generateMysqlDatabaseTypeString", { enumerable: true, get: function () { return generator_1.generateMysqlDatabaseTypeString; } });
 const knex_1 = __importDefault(require("knex"));
@@ -19,7 +19,7 @@ class TableRepository {
         return {};
     }
 }
-function createMyTsql(config) {
+function createMyTSQL(config) {
     const knex = (0, knex_1.default)(config);
     const routinesProxy = new Proxy({}, {
         get(target, prop, receiver) {
@@ -48,8 +48,8 @@ function createMyTsql(config) {
         queryBuilder: knex.queryBuilder.bind(knex),
     };
 }
-exports.createMyTsql = createMyTsql;
-exports.default = createMyTsql;
+exports.createMyTSQL = createMyTSQL;
+exports.default = createMyTSQL;
 // console.log(a.tb.data_type_showcase.select().toQuery())
 // a.proc.test_procedure(1,2,3,4,5,6,7,new Date(),new Date(),10,11,new Date(),new Date(),new Date(),new Date(),new Date(),2,new Date(),"new Date()",1,"new Date()",3,'enum_param','set_param,set_param3')
 //# sourceMappingURL=index.js.map

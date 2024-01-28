@@ -16,13 +16,13 @@ npm install knex mysql2
 
 ## Usage
 
-### Creating a MyTsql Instance
-To start using MyTsql, you need to create an instance with your database configuration.
+### Creating a MyTSQL Instance
+To start using MyTSQL, you need to create an instance with your database configuration.
 
 ```typescript
-import createMyTsql from 'path-to-module';
+import createMyTSQL from 'path-to-module';
 
-const db = createMyTsql<YourSchemaType>({
+const db = createMyTSQL<YourSchemaType>({
     client: 'mysql2',
     connection: {
         host: 'localhost',
@@ -79,33 +79,33 @@ mytsql generate -c ./config.js
 
 ## API Reference
 
-### `createMyTsql<T extends MyTsqlSchemaType>(config: Knex.Config): MyTsqlInstance`
-Creates an instance of MyTsql with the given Knex configuration.
+### `createMyTSQL<T extends MyTSQLSchemaType>(config: Knex.Config): MyTSQLInstance`
+Creates an instance of MyTSQL with the given Knex configuration.
 
 #### Parameters
 - `config`: Knex configuration object.
 
 #### Returns
-- `MyTsqlInstance`: An instance for interacting with the database.
+- `MyTSQLInstance`: An instance for interacting with the database.
 
 ---
 
-### `MyTsqlRoutineType<T>`
+### `MyTSQLRoutineType<T>`
 Type definition for stored procedures.
 
 #### Usage
 ```typescript
-type YourProcedureType = MyTsqlRoutineType<YourSchemaType>;
+type YourProcedureType = MyTSQLRoutineType<YourSchemaType>;
 ```
 
 ---
 
-### `MyTsqlTableType<T>`
+### `MyTSQLTableType<T>`
 Type definition for table queries.
 
 #### Usage
 ```typescript
-type YourTableType = MyTsqlTableType<YourSchemaType>;
+type YourTableType = MyTSQLTableType<YourSchemaType>;
 ```
 
 ---
