@@ -111,7 +111,6 @@ export const DefaultSqlTypeToTsTypeMap = {
         else {
             // extract set values from DTD_IDENTIFIER
             const setValues = param.COLUMN_TYPE.replace(/set\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
-            console.log(setValues);
             return setValues ? `GenerateSetCombinations<${setValues.map(value => `'${value}'`).join(' | ')}>${param.IS_NULLABLE === 'YES' ? ' | null' : ''}` : 'any';
         }
     },

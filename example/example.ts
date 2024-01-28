@@ -52,7 +52,6 @@ const db = createMyTsql<testSchema>({
 })
 
 
-
 db.proc.testis<[{hello:string}[] , {test2:number}[]]>(1,2).then(res => {
     console.log(res[0][0]);
 })
