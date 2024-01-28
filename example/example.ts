@@ -51,19 +51,31 @@ const db = createMyTsql<testSchema>({
     pool: { min: 0, max: 7 }
 })
 
-// db.raw('select * from test').then(res => {
-//     console.log(res);
-// })
 
-// db.proc.testis(1,2).then(res => {
-//     console.log(res);
-// })
-async function main(){
-    db.proc.testis<[{hello:string}[] , {test2:number}[]]>(1,2).then(res => {
-        console.log(res[0][0]);
-    })
-}
-main()
+
+db.proc.testis<[{hello:string}[] , {test2:number}[]]>(1,2).then(res => {
+    console.log(res[0][0]);
+})
+
+db.tb.test.select().then(res => {
+    console.log(res);
+})
+
+db.tb.test.insert({test: 'test'}).then(res => {
+    console.log(res);
+})
+
+db.tb.test.update({test: 'test'}).then(res => {
+    console.log(res);
+})
+
+db.tb.test.delete().then(res => {
+    console.log(res);
+})
+
+
+
+
 
 
 
