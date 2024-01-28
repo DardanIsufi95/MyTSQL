@@ -1,7 +1,11 @@
 {
-  "name": "mysql-ts-generator",
-  "version": "1.0.0",
+  "name": "mytsql",
+  "version": "0.1.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DardanIsufi95/MyTsql.git"
+  },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "scripts": {
@@ -10,15 +14,18 @@
     "build": "npm run build:cjs && npm run build:esm"
   },
   "bin": {
-    "mysql-ts-generator": "./bin/cli.js"
+    "mytsql": "./bin/cli.js"
   },
-  "author": "",
+  "author": "Dardan Isufi",
   "license": "ISC",
   "devDependencies": {
-    "mysql2": "^3.9.0",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.11.7",
+    "typescript": "^5.3.3",
+    "mysql2": "^3.9.0"
   },
   "dependencies": {
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "knex": "^3.1.0"
+    
   }
 }

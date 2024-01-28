@@ -1,221 +1,97 @@
-import {Connection, RowDataPacket} from 'mysql2'
+export {generateMysqlDatabaseTypeString} from './generator'
+export {SqlTypeToTsTypeMap} from './generator'
+import createKnex , {Knex}  from 'knex'
+import {ResultSetHeader , RowDataPacket} from 'mysql2/promise'
 
 
-export type SqlDataType = 'int' | 'varchar' | 'char' | 'text' | 'blob' | 'float' | 'double' | 'decimal' | 'boolean' | 'date' | 'time' | 'datetime' | 'timestamp' | 'year' | 'enum' | 'set' | 'bit' | 'json' | 'tinyint' | 'smallint' | 'mediumint' | 'bigint' | 'longtext' | 'mediumtext' | 'tinytext' | 'binary' | 'varbinary' | 'geometry' | 'point' | 'linestring' | 'polygon' | 'multipoint' | 'multilinestring' | 'multipolygon' | 'geometrycollection' | 'json_table';
-export type InformationSchemaRoutines = {
-    SPECIFIC_NAME: string;
-    ROUTINE_CATALOG: string | null;
-    ROUTINE_SCHEMA: string;
-    ROUTINE_NAME: string;
-    ROUTINE_TYPE: 'PROCEDURE';
-    DATA_TYPE: SqlDataType;
-    CHARACTER_MAXIMUM_LENGTH: number | null;
-    CHARACTER_OCTET_LENGTH: number | null;
-    NUMERIC_PRECISION: number | null;
-    NUMERIC_SCALE: number | null;
-    DATETIME_PRECISION: number | null;
-    CHARACTER_SET_NAME: string | null;
-    COLLATION_NAME: string | null;
-    DTD_IDENTIFIER: string | null;
-    ROUTINE_BODY: 'SQL';
-    ROUTINE_DEFINITION: string | null;
-    EXTERNAL_NAME: string | null;
-    EXTERNAL_LANGUAGE: string | null;
-    PARAMETER_STYLE: 'SQL';
-    IS_DETERMINISTIC: 'YES' | 'NO';
-    SQL_DATA_ACCESS: string;
-    SQL_PATH: string | null;
-    SECURITY_TYPE: 'DEFINER' | 'INVOKER';
-    CREATED: Date;
-    LAST_ALTERED: Date;
-    SQL_MODE: string;
-    ROUTINE_COMMENT: string;
-    DEFINER: string;
-    CHARACTER_SET_CLIENT: string;
-    COLLATION_CONNECTION: string;
-    DATABASE_COLLATION: string;
-};
-export type InformationSchemaParameters = {
-    SPECIFIC_CATALOG: string | null;
-    SPECIFIC_SCHEMA: string | null;
-    SPECIFIC_NAME: string;
-    ORDINAL_POSITION: number;
-    PARAMETER_MODE: 'IN' | 'OUT' | 'INOUT' | null;
-    PARAMETER_NAME: string | null;
-    DATA_TYPE: SqlDataType;
-    CHARACTER_MAXIMUM_LENGTH: number | null;
-    CHARACTER_OCTET_LENGTH: number | null;
-    NUMERIC_PRECISION: number | null;
-    NUMERIC_SCALE: number | null;
-    DATETIME_PRECISION: number | null;
-    CHARACTER_SET_NAME: string | null;
-    COLLATION_NAME: string | null;
-    ROUTINE_TYPE: 'FUNCTION' | 'PROCEDURE';
-    DTD_IDENTIFIER: string | null;
-    ROUTINE_BODY: string | null;
-};
-export type InformationSchemaColumns = {
-    TABLE_CATALOG: string | null;
-    TABLE_SCHEMA: string;
-    TABLE_NAME: string;
-    COLUMN_NAME: string;
-    ORDINAL_POSITION: number;
-    COLUMN_DEFAULT: string | null;
-    IS_NULLABLE: 'YES' | 'NO';
-    DATA_TYPE: SqlDataType;
-    CHARACTER_MAXIMUM_LENGTH: number | null;
-    CHARACTER_OCTET_LENGTH: number | null;
-    NUMERIC_PRECISION: number | null;
-    NUMERIC_SCALE: number | null;
-    DATETIME_PRECISION: number | null;
-    CHARACTER_SET_NAME: string | null;
-    COLLATION_NAME: string | null;
-    COLUMN_TYPE: string;
-    COLUMN_KEY: 'PRI' | 'UNI' | 'MUL' | ''; 
-    EXTRA: string;
-    PRIVILEGES: string;
-    COLUMN_COMMENT: string;
-    GENERATION_EXPRESSION: string;
-};
-export type SqlTypeToTsTypeMap = {
-    [type in SqlDataType]?: string | ((param: InformationSchemaParameters) =>  string)
-}
-export const DefaultSqlTypeToTsTypeMap : SqlTypeToTsTypeMap = {
-    'int': 'number | null',
-    'varchar': 'string | null',
-    'char': 'string | null',
-    'text': 'string | null',
-    'blob': 'Buffer | null',
-    'float': 'number | null',
-    'double': 'number | null',
-    'decimal': 'number | null',
-    'boolean': 'number | null',
-    'date': 'Date | null',
-    'time': 'Date | null',
-    'datetime': 'Date | null',
-    'timestamp': 'Date | null',
-    'year': 'number | null',
-    'enum': (param) =>{
-        // extract enum values from DTD_IDENTIFIER
-        const enumValues = param.DTD_IDENTIFIER!.replace(/enum\((.*)\)/ , '$1').split(',').map(value => value.replace(/'/g , '').trim());
-        return enumValues.map(value => `'${value}'`).join(' | ') + " | null";
+
+
+type MyTsqlSchemaType = {
+    routines : {
+        [key: string] : {
+            parameters : any,
+            returns : any
+        }
     },
-    'set': (param) =>{
-        //extract set values from DTD_IDENTIFIER
-        const setValues = param.DTD_IDENTIFIER!.replace(/set\((.*)\)/ , '$1').split(',').map(value => value.replace(/'/g , '').trim());
-        return `Set<${setValues.map(val=>`'${val}'`).join('|')}> | null`;
-    },
-    'bit': '1 | 0 | null',
-    'json': '{[key:string]:any} | any[] | null',
-    'tinyint': 'number | null',
-    'smallint': 'number | null',
-    'mediumint': 'number | null',
-    'bigint': 'number | null',
-    'longtext': 'string | null',
-    'mediumtext': 'string | null',
-    'tinytext': 'string | null',
-    'binary': 'Buffer | null',
-    'varbinary': 'Buffer | null',
-    'geometry': 'Buffer | string',
-    'point': 'Buffer | string',
-    'linestring': 'Buffer | string',
-    'polygon': 'Buffer | string',
-    'multipoint': 'Buffer | string',
-    'multilinestring': 'Buffer | string',
-    'multipolygon': 'Buffer | string',
-    'geometrycollection': 'Buffer | string',
-    'json_table': 'Buffer | null',
+    tables : {
+        [key: string] : {
+            columns : {
+                [key: string] : any
+            },
+        }
+    }
 }
 
-async function query(connection ,...params):Promise<any>{
-    return new Promise((resolve , reject)=>{
-        connection.query(...params,(err,values)=>{
-            if(err) return reject(err)
-            resolve(values as any)
-        })
-    })
+type MyTsqlRoutineType<T extends MyTsqlSchemaType> = {
+    [key in keyof T['routines']] : <R extends any[] = T['routines'][key]['returns']>(...args: T['routines'][key]['parameters']) => Promise<{headers: ResultSetHeader , dataSet: R}> 
+}
+
+type MyTsqlTableType<T extends MyTsqlSchemaType> =  {
+    [key in keyof T['tables']] : Knex.QueryBuilder<T['tables'][key]['columns'],T['tables'][key]['columns'][] > 
 }
 
 
-async function getDatabaseName(connection: Connection) {
-    const result = await query(connection ,'SELECT DATABASE() as `database`');
+class TableRepository<T extends MyTsqlSchemaType['tables'][string]> {
+    constructor(private knex: Knex, private tablename: string) {}
 
-    return result[0].database as string;
-}
+    async getOneOrFail(opts: Partial<T['columns']>): Promise<T['columns']> {
+        //const res = await this.knex.select<T['columns']>("*").from(this.tablename).where(opts).first();
 
-async function getRoutines(connection: Connection , database: string) {
-    const routines = await query(connection ,`
-        SELECT
-            *
-        FROM
-            information_schema.ROUTINES
-        WHERE
-            ROUTINE_SCHEMA = ? AND
-            ROUTINE_TYPE = 'PROCEDURE'
-    `, [database]);
-    return routines as InformationSchemaRoutines[]
-}
 
-async function getRoutineParameters(connection: Connection , database: string ) { 
-    const parameters = await query(connection,`
-        SELECT
-            *
-        FROM
-            information_schema.PARAMETERS
-        WHERE
-            SPECIFIC_SCHEMA = ?
-    `, [database]);
-    return parameters as InformationSchemaParameters[];
-}
-
-async function getTableColumns(connection: Connection , database: string ) {
-        
-    const columns = await query(connection,`
-        SELECT
-            *
-        FROM
-            information_schema.COLUMNS
-        WHERE
-            TABLE_SCHEMA = ?
-    `, [database]);
-
-    return columns as InformationSchemaColumns[];
-
+        return {} as T['columns'];
+    }
 }
 
 
-async function getRoutinesWithParameters(connection: Connection , database: string){
-    const routines = await getRoutines(connection , database);
-    const parameters = await getRoutineParameters(connection , database);
-    const routinesWithParameters = routines.map(routine => {
-        return {
-            ...routine,
-            PARAMETERS: [...parameters.filter(parameter => parameter.SPECIFIC_NAME === routine.SPECIFIC_NAME)].sort((a,b) => a.ORDINAL_POSITION - b.ORDINAL_POSITION),
+export function createMyTsql<T extends MyTsqlSchemaType>(this: any, config: Knex.Config){
+
+    const knex = createKnex(config)
+
+    const routinesProxy = new Proxy<MyTsqlRoutineType<T>>({} as MyTsqlRoutineType<T>, {
+        get(target, prop , receiver) {
+            return async function(...args: any[] ){
+                //const sql = mysql.format(`call ${String(prop)}(${Array.from(args).map((arg, index) => `?`).join(',')})`, args)
+                const [result] = await knex.raw(`call ${String(prop)}(${Array.from(args).map((arg, index) => `?`).join(',')})` , args)
+                const headers  = result.pop() as ResultSetHeader
+                const dataSet = result as RowDataPacket[][]
+
+                return {
+                    headers,
+                    dataSet
+                }
+            }  
         }
     })
 
-    return routinesWithParameters
-}
+    const tablesProxy = new Proxy<MyTsqlTableType<T>>({} as MyTsqlTableType<T>, {
+        get(target, prop, receiver) {
+
+            
+            return knex.table(prop as string)
+                
+            
+        }
+    })
+   
 
 
-export default async function generateMysqlDatabaseTypeString(connection:Connection , typeMap : SqlTypeToTsTypeMap =  DefaultSqlTypeToTsTypeMap  ) {
 
-    const SqlTypeToTsTypeMap = {
-        ...DefaultSqlTypeToTsTypeMap,
-        ...typeMap
+
+    return {
+        proc: routinesProxy,
+        tb: tablesProxy,
+        transaction: knex.transaction.bind(knex),
+        raw: knex.raw.bind(knex),
+        queryBuilder: knex.queryBuilder.bind(knex),
     }
-
-    const database = await getDatabaseName(connection);
-    const routinesWithParameters = await getRoutinesWithParameters(connection , database)
-
-    const ts = `export type ${database.replaceAll('-','_')}Schema = { \n\troutines : {\n\t\t${routinesWithParameters.map(routine => {
-        return `${routine.ROUTINE_NAME}: {\n\t\t\tparameters: [${routine.PARAMETERS.map(parameter => {
-            if(!SqlTypeToTsTypeMap[parameter.DATA_TYPE]) return `${parameter.PARAMETER_NAME}: any`;
-            if(typeof SqlTypeToTsTypeMap[parameter.DATA_TYPE] === 'string') return `${parameter.PARAMETER_NAME}: ${SqlTypeToTsTypeMap[parameter.DATA_TYPE]}`;
-            if(typeof SqlTypeToTsTypeMap[parameter.DATA_TYPE] === 'function') return `${parameter.PARAMETER_NAME}: ${(SqlTypeToTsTypeMap[parameter.DATA_TYPE] as Function)(parameter)}`;
-        }).join(' , ')}]\n\t\t}`
-    }).join(' ,\n\t\t')}\n\t}\n}`
-
-
-    return ts
 }
+export type GenerateSetCombinations<T extends string, U extends string = T> =
+    T extends any ? `${T},${GenerateSetCombinations<Exclude<U, T>>}` | T : never;
+
+export default createMyTsql
+
+
+// console.log(a.tb.data_type_showcase.select().toQuery())
+
+// a.proc.test_procedure(1,2,3,4,5,6,7,new Date(),new Date(),10,11,new Date(),new Date(),new Date(),new Date(),new Date(),2,new Date(),"new Date()",1,"new Date()",3,'enum_param','set_param,set_param3')
+

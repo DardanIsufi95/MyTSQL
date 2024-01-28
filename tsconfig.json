@@ -10,7 +10,7 @@
     "outDir": "./dist",         // Redirect output structure to the directory
     "rootDir": "./src",         // Specify the root directory of input files
     "lib": ["esnext"],          // Specify library files to be included in the compilation
-    "sourceMap": true ,          // Generate source map files for debugging,
+    "sourceMap": true ,         // Generate source map files for debugging,
     "noImplicitAny": false
   },
   "include": [

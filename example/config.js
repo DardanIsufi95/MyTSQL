@@ -9,7 +9,8 @@ module.exports= {
             host:"localhost",
             user: "root",
             password: "root",
-            database: "test"
+            database: "test",
+            port: 3307,
         }
     },
     runEvery: 5000, // in ms

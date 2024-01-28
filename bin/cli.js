@@ -38,7 +38,7 @@ if (options.config) {
 
     conn = createConnection(connectionConfig)
 
-    const generate = require("../dist/cjs/index.js").default
+    const generate = require("../dist/cjs/index.js").generateMysqlDatabaseTypeString
 
     const generateAndSave = async () => {
         const ts = await generate(conn)
