@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateMysqlDatabaseTypeString = exports.DefaultSqlTypeToTsTypeMap = void 0;
-exports.DefaultSqlTypeToTsTypeMap = {
+export const DefaultSqlTypeToTsTypeMap = {
     'int': (param) => {
         if (param.TYPE === 'PARAMETER') {
             return `number | null`;
@@ -114,7 +111,6 @@ exports.DefaultSqlTypeToTsTypeMap = {
         else {
             // extract set values from DTD_IDENTIFIER
             const setValues = param.COLUMN_TYPE.replace(/set\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
-            console.log(setValues);
             return setValues ? `GenerateSetCombinations<${setValues.map(value => `'${value}'`).join(' | ')}>${param.IS_NULLABLE === 'YES' ? ' | null' : ''}` : 'any';
         }
     },
@@ -227,9 +223,9 @@ function getTableColumnsType(columns, typeMap, spacer = '') {
             return `${column.COLUMN_NAME} : ${typeMap[column.DATA_TYPE](column)}`;
     }).join(`,${spacer}`)}`;
 }
-async function generateMysqlDatabaseTypeString(connection, typeMap = exports.DefaultSqlTypeToTsTypeMap) {
+export async function generateMysqlDatabaseTypeString(connection, typeMap = DefaultSqlTypeToTsTypeMap) {
     const SqlTypeToTsTypeMap = {
-        ...exports.DefaultSqlTypeToTsTypeMap,
+        ...DefaultSqlTypeToTsTypeMap,
         ...typeMap
     };
     const database = await getDatabaseName(connection);
@@ -251,6 +247,5 @@ async function generateMysqlDatabaseTypeString(connection, typeMap = exports.Def
         ].join(' ,\n\t')}\n}`;
     return ts;
 }
-exports.generateMysqlDatabaseTypeString = generateMysqlDatabaseTypeString;
-exports.default = generateMysqlDatabaseTypeString;
+export default generateMysqlDatabaseTypeString;
 //# sourceMappingURL=generator.js.map

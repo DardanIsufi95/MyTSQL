@@ -39,4 +39,3 @@ export declare function createMyTsql<T extends MyTsqlSchemaType>(this: any, conf
 };
 export type GenerateSetCombinations<T extends string, U extends string = T> = T extends any ? `${T},${GenerateSetCombinations<Exclude<U, T>>}` | T : never;
 export default createMyTsql;
-//# sourceMappingURL=index.d.ts.map

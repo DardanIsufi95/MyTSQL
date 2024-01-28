@@ -54,9 +54,9 @@ const mysql2_1 = require("mysql2");
 const pool = (0, mysql2_1.createConnection)({
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: '',
     database: 'test',
-    port: 3307,
+    port: 3306,
 });
 const index_1 = require("./index");
 const promises_1 = require("fs/promises");

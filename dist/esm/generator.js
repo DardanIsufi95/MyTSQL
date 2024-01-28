@@ -93,8 +93,8 @@ export const DefaultSqlTypeToTsTypeMap = {
     'enum': (param) => {
         if (param.TYPE === 'PARAMETER') {
             // extract enum values from PARAMETER_NAME
-            const enumValues = param.PARAMETER_NAME.replace(/enum\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
-            return enumValues.map(value => `'${value}'`).join(' | ') + " | null";
+            const enumValues = param.DTD_IDENTIFIER.replace(/enum\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
+            return enumValues?.map(value => `'${value}'`).join(' | ') + " | null" || 'any';
         }
         else {
             // extract enum values from DTD_IDENTIFIER
@@ -105,13 +105,14 @@ export const DefaultSqlTypeToTsTypeMap = {
     'set': (param) => {
         if (param.TYPE === 'PARAMETER') {
             // extract set values from PARAMETER_NAME
-            const setValues = param.PARAMETER_NAME.replace(/set\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
-            return setValues.map(value => `'${value}'`).join(' | ') + " | null";
+            const setValues = param.DTD_IDENTIFIER.replace(/set\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
+            return `GenerateSetCombinations<${setValues.map(value => `'${value}'`).join(' | ')}> | null`;
         }
         else {
             // extract set values from DTD_IDENTIFIER
             const setValues = param.COLUMN_TYPE.replace(/set\((.*)\)/, '$1').split(',').map(value => value.replace(/'/g, '').trim());
-            return `${setValues.map(value => `'${value}'`).join(' | ')}${param.IS_NULLABLE === 'YES' ? ' | null' : ''}`;
+            console.log(setValues);
+            return setValues ? `GenerateSetCombinations<${setValues.map(value => `'${value}'`).join(' | ')}>${param.IS_NULLABLE === 'YES' ? ' | null' : ''}` : 'any';
         }
     },
     'bit': '1 | 0 | null',
@@ -231,19 +232,20 @@ export async function generateMysqlDatabaseTypeString(connection, typeMap = Defa
     const database = await getDatabaseName(connection);
     const routinesWithParameters = await getRoutinesWithParameters(connection, database);
     const tablesWithColumns = await getTablesWithColumns(connection, database);
-    const ts = `export type ${database.replaceAll('-', '_')}Schema = { \n\t${[
-        `routines : {\n\t\t${routinesWithParameters.map(routine => {
-            return `${routine.ROUTINE_NAME} : {\n\t\t\t${[
-                `parameters : [\n\t\t\t\t${getRoutineParametersType(routine.PARAMETERS, SqlTypeToTsTypeMap, '\n\t\t\t\t')}\n\t\t\t]`,
-                'returns : any'
-            ].join(' ,\n\t\t\t')}\n\t\t}`;
-        }).join(' ,\n\t\t')}\n\t}`,
-        `tables : {\n\t\t${tablesWithColumns.map(table => {
-            return `${table.TABLE_NAME} : {\n\t\t\t${[
-                `columns : {\n\t\t\t\t${getTableColumnsType(table.COLUMNS, SqlTypeToTsTypeMap, '\n\t\t\t\t')}\n\t\t\t}`
-            ].join(' ,\n\t\t\t')}\n\t\t}`;
-        }).join(' ,\n\t\t')}\n\t}`
-    ].join(' ,\n\t')}\n}`;
+    const ts = `export type GenerateSetCombinations<T extends string, U extends string = T> = T extends any ? \`\${T},\${GenerateSetCombinations<Exclude<U, T>>}\` | T : never;\n\n` +
+        `export type ${database.replaceAll('-', '_')}Schema = { \n\t${[
+            `routines : {\n\t\t${routinesWithParameters.map(routine => {
+                return `${routine.ROUTINE_NAME} : {\n\t\t\t${[
+                    `parameters : [\n\t\t\t\t${getRoutineParametersType(routine.PARAMETERS, SqlTypeToTsTypeMap, '\n\t\t\t\t')}\n\t\t\t]`,
+                    'returns : any[][]'
+                ].join(' ,\n\t\t\t')}\n\t\t}`;
+            }).join(' ,\n\t\t')}\n\t}`,
+            `tables : {\n\t\t${tablesWithColumns.map(table => {
+                return `${table.TABLE_NAME} : {\n\t\t\t${[
+                    `columns : {\n\t\t\t\t${getTableColumnsType(table.COLUMNS, SqlTypeToTsTypeMap, '\n\t\t\t\t')}\n\t\t\t}`
+                ].join(' ,\n\t\t\t')}\n\t\t}`;
+            }).join(' ,\n\t\t')}\n\t}`
+        ].join(' ,\n\t')}\n}`;
     return ts;
 }
 export default generateMysqlDatabaseTypeString;

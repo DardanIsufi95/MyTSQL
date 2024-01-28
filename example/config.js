@@ -8,9 +8,9 @@ module.exports= {
         connectionConfig: {
             host:"localhost",
             user: "root",
-            password: "root",
+            password: "",
             database: "test",
-            port: 3307,
+            port: 3306,
         }
     },
     runEvery: 5000, // in ms
