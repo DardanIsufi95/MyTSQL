@@ -1,7 +1,3 @@
-To create markdown documentation for your TypeScript code related to a MySQL database interface, you'll want to structure it in a way that clearly explains each part of your code, its purpose, usage, and any examples. Here's a template you can follow:
-
----
-
 # MyTSQL Documentation
 
 ## Overview
